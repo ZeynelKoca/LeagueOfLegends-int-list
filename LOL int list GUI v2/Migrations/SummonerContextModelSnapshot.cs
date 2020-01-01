@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace LOL_int_list_GUI_v2.Migrations
 {
-    [DbContext(typeof(SummonerContext))]
+    [DbContext(typeof(IntListContext))]
     partial class SummonerContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -17,6 +17,16 @@ namespace LOL_int_list_GUI_v2.Migrations
                 .HasAnnotation("ProductVersion", "3.1.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("LOL_int_list_GUI_v2.LockFile", b =>
+                {
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("FilePath");
+
+                    b.ToTable("LockFileLocation");
+                });
 
             modelBuilder.Entity("LOL_int_list_GUI_v2.Summoner", b =>
                 {

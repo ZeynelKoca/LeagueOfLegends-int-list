@@ -1,14 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,10 +12,8 @@ namespace LOL_int_list_GUI_v2
 {
     public partial class Form1 : Form
     {
-
         private static int Port;
         private static string Password;
-        private const string LockfilePath = @"C:\Riot Games\League of Legends\lockfile";
 
         private static bool IsOnline = false;
 
@@ -27,81 +21,149 @@ namespace LOL_int_list_GUI_v2
         {
             InitializeComponent();
             InitColors();
-            ClientLoop();
+            OnlineCheckLoop();
         }
 
-        public async void ClientLoop()
+        private void InitColors()
+        {
+            this.BackColor = Color.FromArgb(37, 37, 37);
+            btnAdd.BackColor = Color.FromArgb(80, 80, 80);
+            txtbxSummonerName.ForeColor = Color.Silver;
+            btnSelectFolder.BackColor = Color.FromArgb(80, 80, 80);
+        }
+
+        public void IntListLoop()
+        {
+            if (IsInChampSelect())
+            {
+                using (var context = new IntListContext())
+                {
+                    var summoners = GetLobbyMembers();
+                    foreach (var s in summoners)
+                    {
+                        bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == s.summonerName.ToLower());
+                        if (isInList)
+                        {
+                            lblIntListText.Text = "The following people are on your int list";
+                            if (!lblIntList.Text.Contains(s.summonerName))
+                                lblIntList.Text += $"- {s.summonerName}\r\n";
+                        }
+                        else
+                        {
+                            lblIntListText.Text = "No summoners found on your int list. GLHF";
+                        }
+                    }
+
+                }
+            }
+            else
+            {
+                lblIntList.Text = "";
+                lblIntListText.Text = "Currently not in champ select";
+
+            }
+        }
+
+        public async void OnlineCheckLoop()
         {
             while (true)
             {
                 try
                 {
-                    using (Stream s = new FileStream(LockfilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                    using (var context = new IntListContext())
                     {
-                        StreamReader sr = new StreamReader(s);
-                        var text = sr.ReadToEnd();
-                        string[] splittedText = text.Split(':');
-                        Int32.TryParse(splittedText[2], out Port);
-                        Password = splittedText[3];
-                        IsOnline = true;
+                        using (Stream s = new FileStream(context.LockFileLocation.FirstOrDefault().FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        {
+                            StreamReader sr = new StreamReader(s);
+                            var text = sr.ReadToEnd();
+                            string[] splittedText = text.Split(':');
+                            Int32.TryParse(splittedText[2], out Port);
+                            Password = splittedText[3];
+                            IsOnline = true;
+                        }
                     }
                 }
-                catch (FileNotFoundException e)
+                catch (FileNotFoundException)
                 {
-                    //Console.WriteLine("The lockfile could not be found. Either league isn't opened or the directory could not be found\n");
-                    //Console.WriteLine(e);
                     IsOnline = false;
+                }
+                catch (NullReferenceException)
+                {
+                    lblAddedMessage.Text = "League of legends folder has not been set. Press the button on the bottom right and make sure your client is already running. If you did everything right, status should change to Online.";
                 }
                 string status = IsOnline ? "Online" : "Offline";
                 lblClientStatus.Text = status;
 
                 if (IsOnline)
-                    lblClientStatus.ForeColor = Color.Green;
-                else
-                    lblClientStatus.ForeColor = Color.Red;
-
-                if (IsOnline && IsInChampSelect())
                 {
-                    using (var context = new SummonerContext())
+                    lblClientStatus.ForeColor = Color.Green;
+                    if (lblAddedMessage.Text.Contains("League of legends folder has not been set"))
                     {
-                        var summoners = GetLobbyMembers();
-                        foreach (var s in summoners)
-                        {
-                            bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == s.summonerName.ToLower());
-                            if (isInList)
-                                Console.WriteLine($"{s.summonerName} is on your int list.");
-                        }
+                        lblAddedMessage.Text = "";
                     }
+                    IntListLoop();
+                }
+                else
+                {
+                    lblClientStatus.ForeColor = Color.Red;
                 }
 
-                await Task.Delay(100);
+                await Task.Delay(1000);
             }
         }
 
         private WebResponse GetEndpointResponse(string endPoint)
         {
-            string url = "https://127.0.0.1:" + Port + endPoint;
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-            request.Credentials = new NetworkCredential("riot", Password);
-            request.ServerCertificateValidationCallback = delegate { return true; };
+            try
+            {
+                string url = "https://127.0.0.1:" + Port + endPoint;
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                request.Credentials = new NetworkCredential("riot", Password);
+                request.ServerCertificateValidationCallback = delegate { return true; };
 
-            return request.GetResponse();
+                return request.GetResponse();
+            }
+            catch (WebException)
+            {
+                return null;
+            }
+
         }
 
         private void AddToIntList(string name)
         {
-            using (var context = new SummonerContext())
+            if (name[0] == '-')
+                DeleteFromIntList(name.Substring(1));
+            else
             {
-                try
+                using (var context = new IntListContext())
                 {
-                    context.Add(new Summoner { summonerName = name });
+                    try
+                    {
+                        context.Add(new Summoner { summonerName = name });
+                        context.SaveChanges();
+                        lblAddedMessage.Text = $"Summoner '{name}' has been added to your int list.";
+                    }
+                    catch (Microsoft.EntityFrameworkCore.DbUpdateException e) when (e.InnerException is Microsoft.Data.SqlClient.SqlException)
+                    {
+                        lblAddedMessage.Text = $"Summoner '{name}' could not be added to your int list because they are already in it.";
+                    }
+                }
+            }
+        }
+
+        private void DeleteFromIntList(string name)
+        {
+            using (var context = new IntListContext())
+            {
+
+                Summoner summoner = context.Summoners.Where(s => s.summonerName.ToLower() == name.ToLower()).FirstOrDefault();
+                if (summoner != null)
+                {
+                    context.Remove(summoner);
                     context.SaveChanges();
-                    lblAddedMessage.Text = $"Summoner {name} has been added to your int list.";
                 }
-                catch (Microsoft.EntityFrameworkCore.DbUpdateException e) when (e.InnerException is Microsoft.Data.SqlClient.SqlException)
-                {
-                    lblAddedMessage.Text = $"Summoner {name} could not be added to your int list because they are already in it.";
-                }
+                lblAddedMessage.Text = $"Summoner '{name}' has been removed from your int list.";
             }
         }
 
@@ -109,12 +171,20 @@ namespace LOL_int_list_GUI_v2
         {
             using (WebResponse response = GetEndpointResponse("/lol-lobby/v2/lobby/members"))
             {
-                using (var reader = new StreamReader(response.GetResponseStream()))
+                List<Summoner> summonerList = new List<Summoner>();
+                if (response == null)
                 {
-                    string jsonString = reader.ReadToEnd();
-                    List<Summoner> summonerList = JsonConvert.DeserializeObject<List<Summoner>>(jsonString);
-
                     return summonerList;
+                }
+                else
+                {
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string jsonString = reader.ReadToEnd();
+                        summonerList = JsonConvert.DeserializeObject<List<Summoner>>(jsonString);
+
+                        return summonerList;
+                    }
                 }
             }
         }
@@ -123,27 +193,29 @@ namespace LOL_int_list_GUI_v2
         {
             using (WebResponse response = GetEndpointResponse("/lol-chat/v1/conversations"))
             {
-                using (var reader = new StreamReader(response.GetResponseStream()))
+                if (response == null)
                 {
-                    string jsonString = reader.ReadToEnd();
-                    List<Conversations> conversations = JsonConvert.DeserializeObject<List<Conversations>>(jsonString);
-
-                    foreach (var c in conversations)
-                    {
-                        if (c.type == "championSelect")
-                            return true;
-                    }
                     return false;
+                }
+                else
+                {
+                    using (var reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string jsonString = reader.ReadToEnd();
+                        List<Conversations> conversations = JsonConvert.DeserializeObject<List<Conversations>>(jsonString);
+
+                        foreach (var c in conversations)
+                        {
+                            if (c.type == "championSelect")
+                                return true;
+                        }
+                        return false;
+                    }
                 }
             }
         }
 
 
-        private void InitColors()
-        {
-            this.BackColor = Color.FromArgb(37, 37, 37);
-            btnAdd.BackColor = Color.FromArgb(80, 80, 80);
-        }
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
@@ -170,7 +242,44 @@ namespace LOL_int_list_GUI_v2
 
         private void btnAdd_Click(object sender, EventArgs e)
         {
-            AddToIntList(txtbxSummonerName.Text);
+            if (txtbxSummonerName.Text == "Summoner name" && txtbxSummonerName.ForeColor == Color.Silver)
+            {
+                lblAddedMessage.Text = "Enter a summoner name.";
+            }
+            else
+            {
+                AddToIntList(txtbxSummonerName.Text);
+                txtbxSummonerName.Text = "Summoner name";
+                txtbxSummonerName.ForeColor = Color.Silver;
+            }
+        }
+
+        private void btnSelectFolder_Click(object sender, EventArgs e)
+        {
+            using (var context = new IntListContext())
+            {
+                FolderBrowserDialog fbd = new FolderBrowserDialog();
+                fbd.RootFolder = Environment.SpecialFolder.Desktop;
+                fbd.Description = "+++++ Select your league of legends folder+++++";
+                fbd.ShowNewFolderButton = false;
+                if (fbd.ShowDialog() == DialogResult.OK)
+                {
+                    if (context.LockFileLocation.Any())
+                        context.LockFileLocation.Remove(context.LockFileLocation.FirstOrDefault());
+                    context.LockFileLocation.Add(new LockFile { FilePath = $@"{fbd.SelectedPath}\lockfile" });
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void lblIntListText_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

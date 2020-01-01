@@ -1,15 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LOL_int_list_GUI_v2
 {
-    class SummonerContext : DbContext
+    class IntListContext : DbContext
     {
         public DbSet<Summoner> Summoners { get; set; }
+        public DbSet<LockFile> LockFileLocation { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsbuilder)
         {

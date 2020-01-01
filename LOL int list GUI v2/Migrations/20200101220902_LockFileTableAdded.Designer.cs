@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LOL_int_list_GUI_v2.Migrations
 {
     [DbContext(typeof(IntListContext))]
-    [Migration("20200101013720_initialMigration")]
-    partial class initialMigration
+    [Migration("20200101220902_LockFileTableAdded")]
+    partial class LockFileTableAdded
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -19,6 +19,16 @@ namespace LOL_int_list_GUI_v2.Migrations
                 .HasAnnotation("ProductVersion", "3.1.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("LOL_int_list_GUI_v2.LockFile", b =>
+                {
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("FilePath");
+
+                    b.ToTable("LockFileLocation");
+                });
 
             modelBuilder.Entity("LOL_int_list_GUI_v2.Summoner", b =>
                 {
