@@ -32,6 +32,7 @@
             this.lblClientStatus = new System.Windows.Forms.Label();
             this.btnAdd = new System.Windows.Forms.Button();
             this.txtbxSummonerName = new System.Windows.Forms.TextBox();
+            this.lblAddedMessage = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -83,12 +84,24 @@
             this.txtbxSummonerName.Enter += new System.EventHandler(this.txtbxSummonerName_Enter);
             this.txtbxSummonerName.Leave += new System.EventHandler(this.txtbxSummonerName_Leave);
             // 
+            // lblAddedMessage
+            // 
+            this.lblAddedMessage.AutoSize = true;
+            this.lblAddedMessage.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblAddedMessage.ForeColor = System.Drawing.SystemColors.ButtonFace;
+            this.lblAddedMessage.Location = new System.Drawing.Point(46, 66);
+            this.lblAddedMessage.MaximumSize = new System.Drawing.Size(310, 0);
+            this.lblAddedMessage.Name = "lblAddedMessage";
+            this.lblAddedMessage.Size = new System.Drawing.Size(0, 15);
+            this.lblAddedMessage.TabIndex = 3;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(408, 506);
+            this.Controls.Add(this.lblAddedMessage);
             this.Controls.Add(this.txtbxSummonerName);
             this.Controls.Add(this.btnAdd);
             this.Controls.Add(this.lblClientStatus);
@@ -107,6 +120,7 @@
         private System.Windows.Forms.Label lblClientStatus;
         private System.Windows.Forms.Button btnAdd;
         private System.Windows.Forms.TextBox txtbxSummonerName;
+        private System.Windows.Forms.Label lblAddedMessage;
     }
 }
 
