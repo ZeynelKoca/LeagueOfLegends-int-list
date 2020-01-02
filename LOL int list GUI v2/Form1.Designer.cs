@@ -228,7 +228,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Image = global::LOL_int_list_GUI_v2.Properties.Resources.check_ico;
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
             this.pictureBox1.Location = new System.Drawing.Point(4, 4);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(21, 21);
