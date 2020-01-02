@@ -12,10 +12,16 @@ namespace LOL_int_list_GUI_v2
 {
     public partial class Form1 : Form
     {
+
         private static int Port;
         private static string Password;
 
         private static bool IsOnline = false;
+
+        private bool dragging = false;
+        private Point dragCursor;
+        private Point dragForm;
+
 
         public Form1()
         {
@@ -26,10 +32,11 @@ namespace LOL_int_list_GUI_v2
 
         private void InitColors()
         {
-            this.BackColor = Color.FromArgb(37, 37, 37);
+            BackColor = Color.FromArgb(37, 37, 37);
             btnAdd.BackColor = Color.FromArgb(80, 80, 80);
             txtbxSummonerName.ForeColor = Color.Silver;
             btnSelectFolder.BackColor = Color.FromArgb(80, 80, 80);
+            pnlHeader.BackColor = Color.FromArgb(50, 50, 50);
         }
 
         public void IntListLoop()
@@ -156,7 +163,6 @@ namespace LOL_int_list_GUI_v2
         {
             using (var context = new IntListContext())
             {
-
                 Summoner summoner = context.Summoners.Where(s => s.summonerName.ToLower() == name.ToLower()).FirstOrDefault();
                 if (summoner != null)
                 {
@@ -260,7 +266,7 @@ namespace LOL_int_list_GUI_v2
             {
                 FolderBrowserDialog fbd = new FolderBrowserDialog();
                 fbd.RootFolder = Environment.SpecialFolder.Desktop;
-                fbd.Description = "+++++ Select your league of legends folder+++++";
+                fbd.Description = " Select your league of legends folder";
                 fbd.ShowNewFolderButton = false;
                 if (fbd.ShowDialog() == DialogResult.OK)
                 {
@@ -272,14 +278,35 @@ namespace LOL_int_list_GUI_v2
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void pnlHeader_MouseDown(object sender, MouseEventArgs e)
         {
-
+            dragging = true;
+            dragCursor = Cursor.Position;
+            dragForm = Location;
         }
 
-        private void lblIntListText_Click(object sender, EventArgs e)
+        private void pnlHeader_MouseMove(object sender, MouseEventArgs e)
         {
+            if (dragging)
+            {
+                Point dif = Point.Subtract(Cursor.Position, new Size(dragCursor));
+                Location = Point.Add(dragForm, new Size(dif));
+            }
+        }
 
+        private void pnlHeader_MouseUp(object sender, MouseEventArgs e)
+        {
+            dragging = false;
+        }
+
+        private void CloseButton_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void MinimizeButton_Click(object sender, EventArgs e)
+        {
+            WindowState = FormWindowState.Minimized;
         }
     }
 }
