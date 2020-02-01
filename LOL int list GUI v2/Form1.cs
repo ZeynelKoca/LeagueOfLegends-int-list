@@ -43,8 +43,10 @@ namespace LOL_int_list_GUI_v2
         {
             if (IsInChampSelect())
             {
+
                 using (var context = new IntListContext())
                 {
+
                     var summoners = GetLobbyMembers();
                     foreach (var s in summoners)
                     {
@@ -53,7 +55,11 @@ namespace LOL_int_list_GUI_v2
                         {
                             lblIntListText.Text = "The following people are on your int list";
                             if (!lblIntList.Text.Contains(s.summonerName))
+                            {
                                 lblIntList.Text += $"- {s.summonerName}\r\n";
+                                WindowState = FormWindowState.Normal;
+                                Activate();
+                            }
                         }
                         else
                         {
