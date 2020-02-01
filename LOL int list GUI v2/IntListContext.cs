@@ -10,7 +10,7 @@ namespace LOL_int_list_GUI_v2
         protected override void OnConfiguring(DbContextOptionsBuilder optionsbuilder)
         {
             optionsbuilder.UseSqlServer(
-                    @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
+                    @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=My_int_list_DB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False");
         }
     }
 }
