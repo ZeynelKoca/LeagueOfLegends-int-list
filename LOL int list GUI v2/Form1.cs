@@ -92,7 +92,7 @@ namespace LOL_int_list_GUI_v2
 
         private List<int> GetSummonerIds()
         {
-            using (WebResponse response = GetEndpointResponse("/lol-champ-select-legacy/v1/session"))
+            using (WebResponse response = GetEndpointResponse("/lol-champ-select/v1/session"))
             {
                 List<int> summonerIds = new List<int>();
                 if (response == null)
@@ -161,6 +161,7 @@ namespace LOL_int_list_GUI_v2
                 {
                     lblAddedMessage.Text = "League of legends folder has not been set. Press the button on the bottom right and make sure your client is already running. If you did everything right, status should change to Online.";
                 }
+
                 string status = IsOnline ? "Online" : "Offline";
                 lblClientStatus.Text = status;
 
