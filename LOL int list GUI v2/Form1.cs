@@ -95,20 +95,26 @@ namespace LOL_int_list_GUI_v2
             using (WebResponse response = GetEndpointResponse("/lol-champ-select-legacy/v1/session"))
             {
                 List<int> summonerIds = new List<int>();
-                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                if (response == null)
                 {
-                    string jsonString = reader.ReadToEnd();
-                    dynamic data = JObject.Parse(jsonString);
-                    foreach (var obj in data.myTeam)
-                    {
-                        summonerIds.Add((int)obj.summonerId);
-                    }
-                    //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
-
                     return summonerIds;
                 }
-            }
+                else
+                {
+                    using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+                    {
+                        string jsonString = reader.ReadToEnd();
+                        dynamic data = JObject.Parse(jsonString);
+                        foreach (var obj in data.myTeam)
+                        {
+                            summonerIds.Add((int)obj.summonerId);
+                        }
+                        //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
 
+                        return summonerIds;
+                    }
+                }
+            }
         }
 
         private string GetSummonerName(int summonerId)
@@ -230,7 +236,7 @@ namespace LOL_int_list_GUI_v2
                 {
                     lblAddedMessage.Text = $"Summoner '{name}' doesn't exist on your int list.";
                 }
-                
+
             }
         }
 
