@@ -95,7 +95,6 @@
             this.txtbxSummonerName.Size = new System.Drawing.Size(253, 27);
             this.txtbxSummonerName.TabIndex = 2;
             this.txtbxSummonerName.Text = "Summoner name";
-            this.txtbxSummonerName.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             this.txtbxSummonerName.Enter += new System.EventHandler(this.txtbxSummonerName_Enter);
             this.txtbxSummonerName.Leave += new System.EventHandler(this.txtbxSummonerName_Leave);
             // 

@@ -49,11 +49,11 @@ namespace LOL_int_list_GUI_v2
                 {
 
                     List<string> summoners = new List<string>();
-                    foreach (var id in GetSummonerIds())
+                    foreach (int id in GetSummonerIds())
                     {
                         summoners.Add(GetSummonerName(id));
                     }
-                    foreach (var name in summoners)
+                    foreach (string name in summoners)
                     {
                         bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == name.ToLower());
                         if (isInList)
@@ -95,7 +95,7 @@ namespace LOL_int_list_GUI_v2
             using (WebResponse response = GetEndpointResponse("/lol-champ-select-legacy/v1/session"))
             {
                 List<int> summonerIds = new List<int>();
-                using (var reader = new StreamReader(response.GetResponseStream()))
+                using (StreamReader reader = new StreamReader(response.GetResponseStream()))
                 {
                     string jsonString = reader.ReadToEnd();
                     dynamic data = JObject.Parse(jsonString);
@@ -224,30 +224,13 @@ namespace LOL_int_list_GUI_v2
                 {
                     context.Remove(summoner);
                     context.SaveChanges();
-                }
-                lblAddedMessage.Text = $"Summoner '{name}' has been removed from your int list.";
-            }
-        }
-
-        private List<Summoner> GetLobbyMembers()
-        {
-            using (WebResponse response = GetEndpointResponse("/lol-lobby/v2/lobby/members"))
-            {
-                List<Summoner> summonerList = new List<Summoner>();
-                if (response == null)
-                {
-                    return summonerList;
+                    lblAddedMessage.Text = $"Summoner '{name}' has been removed from your int list.";
                 }
                 else
                 {
-                    using (var reader = new StreamReader(response.GetResponseStream()))
-                    {
-                        string jsonString = reader.ReadToEnd();
-                        summonerList = JsonConvert.DeserializeObject<List<Summoner>>(jsonString);
-
-                        return summonerList;
-                    }
+                    lblAddedMessage.Text = $"Summoner '{name}' doesn't exist on your int list.";
                 }
+                
             }
         }
 
@@ -275,13 +258,6 @@ namespace LOL_int_list_GUI_v2
                     }
                 }
             }
-        }
-
-
-
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void txtbxSummonerName_Enter(object sender, EventArgs e)
