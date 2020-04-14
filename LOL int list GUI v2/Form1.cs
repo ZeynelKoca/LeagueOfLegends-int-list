@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -47,16 +48,21 @@ namespace LOL_int_list_GUI_v2
                 using (var context = new IntListContext())
                 {
 
-                    var summoners = GetLobbyMembers();
-                    foreach (var s in summoners)
+                    List<string> summoners = new List<string>();
+                    foreach (var id in GetSummonerIds())
                     {
-                        bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == s.summonerName.ToLower());
+                        summoners.Add(GetSummonerName(id));
+                    }
+                    foreach (var name in summoners)
+                    {
+                        bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == name.ToLower());
                         if (isInList)
                         {
                             lblIntListText.Text = "The following people are on your int list";
-                            if (!lblIntList.Text.Contains(s.summonerName))
+                            if (!lblIntList.Text.Contains(name))
                             {
-                                lblIntList.Text += $"- {s.summonerName}\r\n";
+                                PlayPopSound();
+                                lblIntList.Text += $"- {name}\r\n";
                                 WindowState = FormWindowState.Normal;
                                 Activate();
                             }
@@ -75,6 +81,51 @@ namespace LOL_int_list_GUI_v2
                 lblIntListText.Text = "Currently not in champ select";
 
             }
+        }
+
+        private void PlayPopSound()
+        {
+            Stream str = Properties.Resources.pop1;
+            System.Media.SoundPlayer snd = new System.Media.SoundPlayer(str);
+            snd.Play();
+        }
+
+        private List<int> GetSummonerIds()
+        {
+            using (WebResponse response = GetEndpointResponse("/lol-champ-select-legacy/v1/session"))
+            {
+                List<int> summonerIds = new List<int>();
+                using (var reader = new StreamReader(response.GetResponseStream()))
+                {
+                    string jsonString = reader.ReadToEnd();
+                    dynamic data = JObject.Parse(jsonString);
+                    foreach (var obj in data.myTeam)
+                    {
+                        summonerIds.Add((int)obj.summonerId);
+                    }
+                    //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
+
+                    return summonerIds;
+                }
+            }
+
+        }
+
+        private string GetSummonerName(int summonerId)
+        {
+            using (WebResponse response = GetEndpointResponse("/lol-summoner/v1/summoners/" + summonerId))
+            {
+                using (var reader = new StreamReader(response.GetResponseStream()))
+                {
+                    string jsonString = reader.ReadToEnd();
+                    dynamic data = JObject.Parse(jsonString);
+
+                    //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
+
+                    return (string)data.displayName;
+                }
+            }
+
         }
 
         public async void OnlineCheckLoop()
@@ -121,7 +172,7 @@ namespace LOL_int_list_GUI_v2
                     lblClientStatus.ForeColor = Color.Red;
                 }
 
-                await Task.Delay(1000);
+                await Task.Delay(2000);
             }
         }
 

@@ -69,5 +69,14 @@ namespace LOL_int_list_GUI_v2.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream pop1 {
+            get {
+                return ResourceManager.GetStream("pop1", resourceCulture);
+            }
+        }
     }
 }
