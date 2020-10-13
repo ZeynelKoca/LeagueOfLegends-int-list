@@ -8,11 +8,17 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace LOL_int_list_GUI_v2
 {
     public partial class Form1 : Form
     {
+        private List<Summoner> _intListSummoners = new List<Summoner>();
+
+        private string _dbListPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DbList.xml");
+        private LockFile _lockFile;
 
         private static int Port;
         private static string Password;
@@ -28,7 +34,40 @@ namespace LOL_int_list_GUI_v2
         {
             InitializeComponent();
             InitColors();
+            LoadSummonersFromDb();
             OnlineCheckLoop();
+        }
+
+        private void LoadSummonersFromDb()
+        {
+            CreateDbListFile();
+
+            XmlDocument xmlDocument = new XmlDocument();
+            xmlDocument.Load(_dbListPath);
+
+            foreach (XmlNode node in xmlDocument)
+            {
+                foreach (XmlNode childNode in node.ChildNodes)
+                {
+                    string name = childNode.InnerText;
+                    _intListSummoners.Add(new Summoner { SummonerName = name });
+                }
+            }
+        }
+
+        private void CreateDbListFile()
+        {
+            if (!File.Exists(_dbListPath))
+            {
+                using (var writer = new XmlTextWriter(_dbListPath, null))
+                {
+                    writer.Formatting = System.Xml.Formatting.Indented;
+
+                    XmlDocument doc = new XmlDocument();
+                    doc.LoadXml("<ArrayOfSummoner></ArrayOfSummoner>");
+                    doc.Save(writer);
+                }
+            }
         }
 
         private void InitColors()
@@ -44,48 +83,42 @@ namespace LOL_int_list_GUI_v2
         {
             if (IsInChampSelect())
             {
-
-                using (var context = new IntListContext())
+                List<string> lobbySummonerNames = new List<string>();
+                foreach (var id in GetSummonerIds())
                 {
+                    lobbySummonerNames.Add(GetSummonerName(id));
+                }
 
-                    List<string> summoners = new List<string>();
-                    foreach (int id in GetSummonerIds())
+                foreach (var name in lobbySummonerNames)
+                {
+                    bool isInList = _intListSummoners.Any(summoner => summoner.SummonerName.ToLower() == name.ToLower());
+                    if (isInList)
                     {
-                        summoners.Add(GetSummonerName(id));
-                    }
-                    foreach (string name in summoners)
-                    {
-                        bool isInList = context.Summoners.Any(summoner => summoner.summonerName.ToLower() == name.ToLower());
-                        if (isInList)
+                        lblIntListText.Text = "The following people are on your int list";
+                        if (!lblIntList.Text.Contains(name))
                         {
-                            lblIntListText.Text = "The following people are on your int list";
-                            if (!lblIntList.Text.Contains(name))
-                            {
-                                PlayPopSound();
-                                lblIntList.Text += $"- {name}\r\n";
-                                WindowState = FormWindowState.Normal;
-                                Activate();
-                            }
-                        }
-                        else
-                        {
-                            lblIntListText.Text = "No summoners found on your int list. GLHF";
+                            PlayPopSound();
+                            lblIntList.Text += $"- {name}\r\n";
+                            WindowState = FormWindowState.Normal;
+                            Activate();
                         }
                     }
-
+                    else
+                    {
+                        lblIntListText.Text = "No summoners found on your int list. GLHF";
+                    }
                 }
             }
             else
             {
                 lblIntList.Text = "";
                 lblIntListText.Text = "Currently not in champ select";
-
             }
         }
 
         private void PlayPopSound()
         {
-            Stream str = Properties.Resources.pop1;
+            Stream str = Siskos_LOL_int_list_GUI.Properties.Resources.pop1;
             System.Media.SoundPlayer snd = new System.Media.SoundPlayer(str);
             snd.Play();
         }
@@ -109,7 +142,6 @@ namespace LOL_int_list_GUI_v2
                         {
                             summonerIds.Add((int)obj.summonerId);
                         }
-                        //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
 
                         return summonerIds;
                     }
@@ -126,8 +158,6 @@ namespace LOL_int_list_GUI_v2
                     string jsonString = reader.ReadToEnd();
                     dynamic data = JObject.Parse(jsonString);
 
-                    //summonerIds = JsonConvert.DeserializeObject<List<SummonerId>>(jsonString);
-
                     return (string)data.displayName;
                 }
             }
@@ -140,17 +170,14 @@ namespace LOL_int_list_GUI_v2
             {
                 try
                 {
-                    using (var context = new IntListContext())
+                    using (Stream s = new FileStream(_lockFile.FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                     {
-                        using (Stream s = new FileStream(context.LockFileLocation.FirstOrDefault().FilePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                        {
-                            StreamReader sr = new StreamReader(s);
-                            var text = sr.ReadToEnd();
-                            string[] splittedText = text.Split(':');
-                            Int32.TryParse(splittedText[2], out Port);
-                            Password = splittedText[3];
-                            IsOnline = true;
-                        }
+                        StreamReader sr = new StreamReader(s);
+                        var text = sr.ReadToEnd();
+                        string[] splittedText = text.Split(':');
+                        int.TryParse(splittedText[2], out Port);
+                        Password = splittedText[3];
+                        IsOnline = true;
                     }
                 }
                 catch (FileNotFoundException)
@@ -203,41 +230,47 @@ namespace LOL_int_list_GUI_v2
         private void AddToIntList(string name)
         {
             if (name[0] == '-')
+            {
                 DeleteFromIntList(name.Substring(1));
+            }
             else
             {
-                using (var context = new IntListContext())
+                var summoner = _intListSummoners.Where(s => s.SummonerName.ToLower() == name.ToLower()).FirstOrDefault();
+                if (summoner != null)
                 {
-                    try
+                    lblAddedMessage.Text = $"Summoner '{name}' could not be added to your int list because they are already in it.";
+                }
+                else
+                {
+                    _intListSummoners.Add(new Summoner { SummonerName = name });
+                    XmlSerializer serializer = new XmlSerializer(typeof(List<Summoner>));
+                    using (TextWriter writer = new StreamWriter(_dbListPath))
                     {
-                        context.Add(new Summoner { summonerName = name });
-                        context.SaveChanges();
-                        lblAddedMessage.Text = $"Summoner '{name}' has been added to your int list.";
+                        serializer.Serialize(writer, _intListSummoners);
                     }
-                    catch (Microsoft.EntityFrameworkCore.DbUpdateException e) when (e.InnerException is Microsoft.Data.SqlClient.SqlException)
-                    {
-                        lblAddedMessage.Text = $"Summoner '{name}' could not be added to your int list because they are already in it.";
-                    }
+
+                    lblAddedMessage.Text = $"Summoner '{name}' has been added to your int list.";
                 }
             }
         }
 
         private void DeleteFromIntList(string name)
         {
-            using (var context = new IntListContext())
+            Summoner summoner = _intListSummoners.Where(s => s.SummonerName.ToLower() == name.ToLower()).FirstOrDefault();
+            if (summoner != null)
             {
-                Summoner summoner = context.Summoners.Where(s => s.summonerName.ToLower() == name.ToLower()).FirstOrDefault();
-                if (summoner != null)
+                _intListSummoners.Remove(summoner);
+                XmlSerializer serializer = new XmlSerializer(typeof(List<Summoner>));
+                using (TextWriter writer = new StreamWriter(_dbListPath))
                 {
-                    context.Remove(summoner);
-                    context.SaveChanges();
-                    lblAddedMessage.Text = $"Summoner '{name}' has been removed from your int list.";
-                }
-                else
-                {
-                    lblAddedMessage.Text = $"Summoner '{name}' doesn't exist on your int list.";
+                    serializer.Serialize(writer, _intListSummoners);
                 }
 
+                lblAddedMessage.Text = $"Summoner '{name}' has been removed from your int list.";
+            }
+            else
+            {
+                lblAddedMessage.Text = $"Summoner '{name}' doesn't exist on your int list.";
             }
         }
 
@@ -301,19 +334,16 @@ namespace LOL_int_list_GUI_v2
 
         private void btnSelectFolder_Click(object sender, EventArgs e)
         {
-            using (var context = new IntListContext())
+            FolderBrowserDialog fbd = new FolderBrowserDialog
             {
-                FolderBrowserDialog fbd = new FolderBrowserDialog();
-                fbd.RootFolder = Environment.SpecialFolder.Desktop;
-                fbd.Description = " Select your league of legends folder";
-                fbd.ShowNewFolderButton = false;
-                if (fbd.ShowDialog() == DialogResult.OK)
-                {
-                    if (context.LockFileLocation.Any())
-                        context.LockFileLocation.Remove(context.LockFileLocation.FirstOrDefault());
-                    context.LockFileLocation.Add(new LockFile { FilePath = $@"{fbd.SelectedPath}\lockfile" });
-                    context.SaveChanges();
-                }
+                RootFolder = Environment.SpecialFolder.Desktop,
+                Description = " Select your league of legends folder",
+                ShowNewFolderButton = false
+            };
+
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                _lockFile = new LockFile { FilePath = $@"{fbd.SelectedPath}\lockfile" };
             }
         }
 
