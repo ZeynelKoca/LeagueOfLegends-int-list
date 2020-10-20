@@ -1,3 +1,5 @@
+<img src="https://img.shields.io/github/v/release/ZeynelKoca/LeagueOfLegends-int-list.svg">
+
 # Sisko's LeagueOfLegends Int List
 An external application that makes use of the official League of Legends API to create an int list. The program saves all summoners in a file and can even delete them by putting 
 a `-` in front of the summoner name. When active, it will read the League of Legends client process and once in champion select, will go through your teammates' summoner names.
