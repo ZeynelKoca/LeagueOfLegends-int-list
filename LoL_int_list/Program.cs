@@ -2,19 +2,19 @@
 using System.Threading;
 using System.Windows.Forms;
 
-namespace LoL_int_list
+namespace Siskos_LOL_int_list
 {
-    static class Program
-    {   
+    internal static class Program
+    {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
             const string appName = "Sisko's LoL int list";
 
-            new Mutex(true, appName, out bool createdNew);
+            var mutex = new Mutex(true, appName, out var createdNew);
 
             if (!createdNew)
                 return;
@@ -22,6 +22,8 @@ namespace LoL_int_list
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+
+            GC.KeepAlive(mutex);
         }
     }
 }

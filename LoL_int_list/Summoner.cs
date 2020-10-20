@@ -1,4 +1,4 @@
-﻿namespace LoL_int_list
+﻿namespace Siskos_LOL_int_list
 {
     public class Summoner
     {

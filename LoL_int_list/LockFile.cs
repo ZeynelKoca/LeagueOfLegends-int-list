@@ -1,6 +1,6 @@
-﻿namespace LoL_int_list
+﻿namespace Siskos_LOL_int_list
 {
-    class LockFile
+    internal class LockFile
     {
         public string FilePath { get; set; }
     }
