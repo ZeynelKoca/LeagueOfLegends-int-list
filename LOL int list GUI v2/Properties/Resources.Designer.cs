@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Siskos_LOL_int_list_GUI.Properties {
+namespace Siskos_LOL_int_list.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Siskos_LOL_int_list_GUI.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Siskos_LOL_int_list_GUI.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Siskos_LOL_int_list.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,16 +57,6 @@ namespace Siskos_LOL_int_list_GUI.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap Application {
-            get {
-                object obj = ResourceManager.GetObject("Application", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
             }
         }
         

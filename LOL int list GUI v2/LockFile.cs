@@ -1,4 +1,4 @@
-﻿namespace LOL_int_list_GUI_v2
+﻿namespace LoL_int_list
 {
     class LockFile
     {

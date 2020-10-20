@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("LOL int list GUI v2")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("LoL_int_list")]
+[assembly: AssemblyDescription("A League of Legends int list application")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("LOL int list GUI v2")]
+[assembly: AssemblyCompany("Sisko")]
+[assembly: AssemblyProduct("Sisko's LoL int list")]
 [assembly: AssemblyCopyright("Copyright ©  2020")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

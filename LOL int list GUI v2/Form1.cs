@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace LOL_int_list_GUI_v2
+namespace LoL_int_list
 {
     public partial class Form1 : Form
     {
@@ -118,7 +118,7 @@ namespace LOL_int_list_GUI_v2
 
         private void PlayPopSound()
         {
-            Stream str = Siskos_LOL_int_list_GUI.Properties.Resources.pop1;
+            Stream str = Siskos_LOL_int_list.Properties.Resources.pop1;
             System.Media.SoundPlayer snd = new System.Media.SoundPlayer(str);
             snd.Play();
         }

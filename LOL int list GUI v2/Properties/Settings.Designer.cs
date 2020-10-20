@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Siskos_LOL_int_list_GUI.Properties {
+namespace Siskos_LOL_int_list.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]

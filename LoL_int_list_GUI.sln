@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.902
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29613.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sisko's LOL int list", "LOL int list GUI v2\Sisko's LOL int list.csproj", "{2FD3996F-667F-4F3C-BA59-70DC5479CD2E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sisko's_LoL_int_list", "LOL int list GUI v2\Sisko's_LoL_int_list.csproj", "{2FD3996F-667F-4F3C-BA59-70DC5479CD2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
