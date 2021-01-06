@@ -116,11 +116,11 @@ namespace Siskos_LOL_int_list
             snd.Play();
         }
 
-        private IEnumerable<int> GetSummonerIds()
+        private IEnumerable<long> GetSummonerIds()
         {
             using (var response = GetEndpointResponse("/lol-champ-select/v1/session"))
             {
-                var summonerIds = new List<int>();
+                var summonerIds = new List<long>();
                 if (response == null)
                 {
                     return summonerIds;
@@ -132,7 +132,7 @@ namespace Siskos_LOL_int_list
                     dynamic data = JObject.Parse(jsonString);
                     foreach (var obj in data.myTeam)
                     {
-                        summonerIds.Add((int)obj.summonerId);
+                        summonerIds.Add((long)obj.summonerId);
                     }
 
                     return summonerIds;
@@ -140,7 +140,7 @@ namespace Siskos_LOL_int_list
             }
         }
 
-        private string GetSummonerName(int summonerId)
+        private string GetSummonerName(long summonerId)
         {
             using (var response = GetEndpointResponse("/lol-summoner/v1/summoners/" + summonerId))
             {
