@@ -1,8 +1,8 @@
 ﻿namespace Siskos_LOL_int_list
 {
-    internal abstract class Conversations
+    internal class Conversations
     {
-        protected Conversations(string type)
+        public Conversations(string type)
         {
             Type = type;
         }
