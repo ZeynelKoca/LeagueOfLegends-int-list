@@ -18,7 +18,7 @@ namespace Siskos_LOL_int_list
         private readonly List<Summoner> _intListSummoners = new List<Summoner>();
 
         private readonly string _dbListPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DbList.xml");
-        private LockFile _lockFile;
+        private LockFile _lockFile = new LockFile();
 
         private static int _port;
         private static string _lockfilePw;
@@ -328,7 +328,7 @@ namespace Siskos_LOL_int_list
 
             if (fbd.ShowDialog() == DialogResult.OK)
             {
-                _lockFile = new LockFile { FilePath = $@"{fbd.SelectedPath}\lockfile" };
+                _lockFile.FilePath = $@"{fbd.SelectedPath}\lockfile";
             }
         }
 
