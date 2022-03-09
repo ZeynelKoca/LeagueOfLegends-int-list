@@ -17,7 +17,9 @@ namespace Siskos_LOL_int_list
     {
         private readonly List<Summoner> _intListSummoners = new List<Summoner>();
 
-        private readonly string _dbListPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DbList.xml");
+        private readonly string _dbListPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList/DbList.xml");
+        private readonly string _leagueLocationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList/leagueloc");
+        private readonly string _intListFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList");
         private LockFile _lockFile = new LockFile();
 
         private static int _port;
@@ -35,6 +37,7 @@ namespace Siskos_LOL_int_list
             InitializeComponent();
             InitColors();
             LoadSummonersFromDb();
+            SetLockFilePathFromSafe();
             OnlineCheckLoop();
         }
 
@@ -55,9 +58,30 @@ namespace Siskos_LOL_int_list
             }
         }
 
+        private void SetLockFilePathFromSafe()
+        {
+            if (!File.Exists(_leagueLocationPath)) return;
+            using (var reader = new StreamReader(_leagueLocationPath))
+            {
+                _lockFile.FilePath = $@"{reader.ReadToEnd()}\lockfile";
+            }
+        }
+
+        private void UpdateLeagueLocationFile(string path)
+        {
+            using(var writer = new StreamWriter(_leagueLocationPath))
+            {
+                writer.Write(path);
+            }
+        }
+
         private void CreateDbListFile()
         {
             if (File.Exists(_dbListPath)) return;
+            if (!Directory.Exists(_intListFolderPath))
+            {
+                Directory.CreateDirectory(_intListFolderPath);
+            }
             using (var writer = new XmlTextWriter(_dbListPath, null))
             {
                 writer.Formatting = System.Xml.Formatting.Indented;
@@ -329,6 +353,7 @@ namespace Siskos_LOL_int_list
             if (fbd.ShowDialog() == DialogResult.OK)
             {
                 _lockFile.FilePath = $@"{fbd.SelectedPath}\lockfile";
+                UpdateLeagueLocationFile(fbd.SelectedPath);
             }
         }
 

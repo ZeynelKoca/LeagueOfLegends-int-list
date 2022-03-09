@@ -10,7 +10,7 @@ namespace Siskos_LOL_int_list
         {
             get
             {
-                return _filePath == null ? (_filePath = $@"{TryGetFilePath()}\lockfile") : _filePath;
+                return _filePath == null ? (_filePath = $@"{TryGetFolderPath()}\lockfile") : _filePath;
             }
             set
             {
@@ -18,7 +18,7 @@ namespace Siskos_LOL_int_list
             }
         }
 
-        private string TryGetFilePath()
+        private string TryGetFolderPath()
         {
             if(Directory.Exists(@"C:\Riot Games\League of Legends"))
             {
