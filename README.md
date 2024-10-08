@@ -9,7 +9,7 @@ When a player is found to be in your int list, the program will pop-up to the fr
 found to be in your int list. 
 
 <p align="center">
-  <img src="LoL_int_list/Resources/Application.png">
+  <img src="IntList/Resources/Application.png">
 </p>
 
 

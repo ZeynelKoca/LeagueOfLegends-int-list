@@ -1,16 +1,14 @@
-﻿using System.IO;
-
-namespace Siskos_LOL_int_list
+﻿namespace IntList
 {
     internal class LockFile
     {
-        private string _filePath;
+        private string? _filePath;
 
         public string FilePath
         {
             get
             {
-                return _filePath == null ? (_filePath = $@"{TryGetFolderPath()}\lockfile") : _filePath;
+                return _filePath ??= $@"{TryGetFolderPath()}\lockfile";
             }
             set
             {
@@ -18,9 +16,9 @@ namespace Siskos_LOL_int_list
             }
         }
 
-        private string TryGetFolderPath()
+        private static string TryGetFolderPath()
         {
-            if(Directory.Exists(@"C:\Riot Games\League of Legends"))
+            if (Directory.Exists(@"C:\Riot Games\League of Legends"))
             {
                 return @"C:\Riot Games\League of Legends";
             }
@@ -61,7 +59,8 @@ namespace Siskos_LOL_int_list
                 return @"D:\Program Files (x86)\League of Legends";
             }
 
-            return null;
+            return string.Empty;
         }
     }
+
 }
