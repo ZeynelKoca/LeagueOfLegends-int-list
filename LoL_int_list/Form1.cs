@@ -15,12 +15,12 @@ namespace Siskos_LOL_int_list
 {
     public partial class Form1 : Form
     {
-        private readonly List<Summoner> _intListSummoners = new List<Summoner>();
+        private readonly List<string> _intListSummoners = new List<string>();
 
         private readonly string _dbListPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList/DbList.xml");
         private readonly string _leagueLocationPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList/leagueloc");
         private readonly string _intListFolderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "IntList");
-        private LockFile _lockFile = new LockFile();
+        private readonly LockFile _lockFile = new LockFile();
 
         private static int _port;
         private static string _lockfilePw;
@@ -53,7 +53,7 @@ namespace Siskos_LOL_int_list
                 foreach (XmlNode childNode in node.ChildNodes)
                 {
                     var name = childNode.InnerText;
-                    _intListSummoners.Add(new Summoner { SummonerName = name });
+                    _intListSummoners.Add(name);
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace Siskos_LOL_int_list
 
         private void UpdateLeagueLocationFile(string path)
         {
-            using(var writer = new StreamWriter(_leagueLocationPath))
+            using (var writer = new StreamWriter(_leagueLocationPath))
             {
                 writer.Write(path);
             }
@@ -103,33 +103,31 @@ namespace Siskos_LOL_int_list
 
         private void IntListLoop()
         {
-            if (IsInChampSelect())
+            if (IsInGame())
             {
-                var lobbySummonerNames = GetSummonerIds().Select(GetSummonerName).ToList();
+                var gameSummonerNames = GetSummonerNames();
 
-                foreach (var name in lobbySummonerNames)
+                var anyInIntList = _intListSummoners.Intersect(gameSummonerNames).Any();
+                if (!anyInIntList)
                 {
-                    var isInList = _intListSummoners.Any(summoner =>
-                        string.Equals(summoner.SummonerName, name, StringComparison.CurrentCultureIgnoreCase));
-                    if (isInList)
-                    {
-                        lblIntListText.Text = @"The following people are on your int list";
-                        if (lblIntList.Text.Contains(name)) continue;
-                        PlayPopSound();
-                        lblIntList.Text += $"- {name}\r\n";
-                        WindowState = FormWindowState.Normal;
-                        Activate();
-                    }
-                    else
-                    {
-                        lblIntListText.Text = @"No summoners found on your int list. GLHF";
-                    }
+                    lblIntListText.Text = @"No summoners found on your int list. GLHF";
+                    return;
+                }
+
+                lblIntListText.Text = @"The following people are on your int list";
+                foreach (var name in gameSummonerNames)
+                {
+                    if (lblIntList.Text.Contains(name) || !_intListSummoners.Contains(name)) continue;
+                    PlayPopSound();
+                    lblIntList.Text += $"- {name}\r\n";
+                    WindowState = FormWindowState.Normal;
+                    Activate();
                 }
             }
             else
             {
                 lblIntList.Text = "";
-                lblIntListText.Text = @"Currently not in champ select";
+                lblIntListText.Text = @"Currently not in game";
             }
         }
 
@@ -140,43 +138,24 @@ namespace Siskos_LOL_int_list
             snd.Play();
         }
 
-        private IEnumerable<long> GetSummonerIds()
+        private IEnumerable<string> GetSummonerNames()
         {
-            using (var response = GetEndpointResponse("/lol-champ-select/v1/session"))
+            using (var response = GetEndpointResponse("/lol-gameflow/v1/session"))
             {
-                var summonerIds = new List<long>();
-                if (response == null)
-                {
-                    return summonerIds;
-                }
+                var summonerNames = new List<string>();
 
                 using (var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
                 {
                     var jsonString = reader.ReadToEnd();
                     dynamic data = JObject.Parse(jsonString);
-                    foreach (var obj in data.myTeam)
+                    foreach (var obj in data.gameData.playerChampionSelections)
                     {
-                        summonerIds.Add((long)obj.summonerId);
+                        summonerNames.Add((string)obj.summonerInternalName);
                     }
 
-                    return summonerIds;
+                    return summonerNames;
                 }
             }
-        }
-
-        private string GetSummonerName(long summonerId)
-        {
-            using (var response = GetEndpointResponse("/lol-summoner/v1/summoners/" + summonerId))
-            {
-                using (var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
-                {
-                    var jsonString = reader.ReadToEnd();
-                    dynamic data = JObject.Parse(jsonString);
-
-                    return (string)data.displayName;
-                }
-            }
-
         }
 
         private async void OnlineCheckLoop()
@@ -252,18 +231,24 @@ namespace Siskos_LOL_int_list
             else
             {
                 var summoner = _intListSummoners.FirstOrDefault(s =>
-                    string.Equals(s.SummonerName, name, StringComparison.CurrentCultureIgnoreCase));
+                    string.Equals(s, name, StringComparison.CurrentCultureIgnoreCase));
                 if (summoner != null)
                 {
                     lblAddedMessage.Text = $@"Summoner '{name}' could not be added to your int list because they are already in it.";
                 }
                 else
                 {
-                    _intListSummoners.Add(new Summoner { SummonerName = name });
+                    _intListSummoners.Add(name);
+                    var summonersList = new List<Summoner>();
+                    foreach (var summonerName in _intListSummoners)
+                    {
+                        summonersList.Add(new Summoner { SummonerName = summonerName });
+                    }
+
                     var serializer = new XmlSerializer(typeof(List<Summoner>));
                     using (TextWriter writer = new StreamWriter(_dbListPath))
                     {
-                        serializer.Serialize(writer, _intListSummoners);
+                        serializer.Serialize(writer, summonersList);
                     }
 
                     lblAddedMessage.Text = $@"Summoner '{name}' has been added to your int list.";
@@ -274,7 +259,7 @@ namespace Siskos_LOL_int_list
         private void DeleteFromIntList(string name)
         {
             var summoner = _intListSummoners.FirstOrDefault(s =>
-                string.Equals(s.SummonerName, name, StringComparison.CurrentCultureIgnoreCase));
+                string.Equals(s, name, StringComparison.CurrentCultureIgnoreCase));
             if (summoner != null)
             {
                 _intListSummoners.Remove(summoner);
@@ -292,23 +277,21 @@ namespace Siskos_LOL_int_list
             }
         }
 
-        private static bool IsInChampSelect()
+        private static bool IsInGame()
         {
-            using (var response = GetEndpointResponse("/lol-chat/v1/conversations"))
+            using (var response = GetEndpointResponse("/lol-gameflow/v1/session"))
             {
                 if (response == null)
                 {
                     return false;
                 }
-                else
-                {
-                    using (var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
-                    {
-                        var jsonString = reader.ReadToEnd();
-                        var conversations = JsonConvert.DeserializeObject<List<Conversations>>(jsonString);
 
-                        return conversations.Any(c => c.Type == "championSelect");
-                    }
+                using (var reader = new StreamReader(response.GetResponseStream() ?? throw new InvalidOperationException()))
+                {
+                    var jsonString = reader.ReadToEnd();
+                    dynamic data = JObject.Parse(jsonString);
+
+                    return data.phase == "InProgress";
                 }
             }
         }
