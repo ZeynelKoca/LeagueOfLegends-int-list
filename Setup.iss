@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "LoL Int List"
-#define MyAppVersion "1.2.0"
+#define MyAppVersion "1.2.1"
 #define MyAppPublisher "Sisko"
 #define MyAppURL "https://github.com/ZeynelKoca"
 #define MyAppExeName "IntList.exe"
@@ -28,7 +28,7 @@ ArchitecturesAllowed=x64compatible
 ; the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
 DisableProgramGroupPage=yes
-OutputBaseFilename=lolintlistsetup
+OutputBaseFilename=setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -40,7 +40,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\Git\My repositories\IntList\IntList\bin\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "D:\Git\My repositories\LeagueOfLegends-int-list\IntList\bin\publish\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
