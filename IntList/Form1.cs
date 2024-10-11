@@ -94,31 +94,38 @@ namespace IntList
 
         private async Task IntListCheck()
         {
-            if (await IsInGame())
+            try
             {
-                var gameSummonerNames = await GetSummonerNames();
-
-                var anyInIntList = _intListSummoners.Intersect(gameSummonerNames).Any();
-                if (!anyInIntList)
+                if (await IsInGame())
                 {
-                    lblIntListText.Text = @"No summoners found on your int list. GLHF";
-                    return;
+                    var gameSummonerNames = await GetSummonerNames();
+
+                    var anyInIntList = _intListSummoners.Intersect(gameSummonerNames).Any();
+                    if (!anyInIntList)
+                    {
+                        lblIntListText.Text = @"No summoners found on your int list. GLHF";
+                        return;
+                    }
+
+                    lblIntListText.Text = @"The following people are on your int list";
+                    foreach (var name in gameSummonerNames)
+                    {
+                        if (lblIntList.Text.Contains(name) || !_intListSummoners.Contains(name)) continue;
+                        PlayPopSound();
+                        lblIntList.Text += $"- {name}\r\n";
+                        WindowState = FormWindowState.Normal;
+                        Activate();
+                    }
                 }
-
-                lblIntListText.Text = @"The following people are on your int list";
-                foreach (var name in gameSummonerNames)
+                else
                 {
-                    if (lblIntList.Text.Contains(name) || !_intListSummoners.Contains(name)) continue;
-                    PlayPopSound();
-                    lblIntList.Text += $"- {name}\r\n";
-                    WindowState = FormWindowState.Normal;
-                    Activate();
+                    lblIntList.Text = "";
+                    lblIntListText.Text = @"Currently not in game";
                 }
             }
-            else
+            catch (Exception ex)
             {
-                lblIntList.Text = "";
-                lblIntListText.Text = @"Currently not in game";
+                Console.WriteLine(ex.Message);
             }
         }
 
@@ -241,7 +248,7 @@ namespace IntList
                 lblAddedMessage.Text = $@"Summoner '{name}' could not be added to your int list because they are already in it.";
                 return;
             }
-            
+
             _intListSummoners.Add(name);
             UpdateIntList();
 
