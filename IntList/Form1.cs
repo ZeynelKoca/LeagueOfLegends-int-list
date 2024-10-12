@@ -138,18 +138,40 @@ namespace IntList
 
         private async static Task<IEnumerable<string>> GetSummonerNames()
         {
-            using var response = await GetEndpointResponse("/lol-gameflow/v1/session");
+            var summonerIds = await GetSummonerIds();
+
             var summonerNames = new List<string>();
+            foreach (var id in summonerIds)
+            {
+                using var response = await GetEndpointResponse($"/lol-summoner/v1/summoners/{id}");
+
+                var jsonString = await response.Content.ReadAsStringAsync();
+                dynamic data = JObject.Parse(jsonString);
+
+                summonerNames.Add((string)data.gameName);
+            }
+
+            return summonerNames;
+        }
+
+        private async static Task<IEnumerable<long>> GetSummonerIds()
+        {
+            using var response = await GetEndpointResponse("/lol-gameflow/v1/session");
+            var summonerIds = new List<long>();
 
             var jsonString = await response.Content.ReadAsStringAsync();
             dynamic data = JObject.Parse(jsonString);
 
-            foreach (var obj in data.gameData.playerChampionSelections)
+            foreach (var obj in data.gameData.teamOne)
             {
-                summonerNames.Add((string)obj.summonerInternalName);
+                summonerIds.Add((long)obj.summonerId);
+            }
+            foreach (var obj in data.gameData.teamTwo)
+            {
+                summonerIds.Add((long)obj.summonerId);
             }
 
-            return summonerNames;
+            return summonerIds;
         }
 
         private async void OnlineCheckLoop()
