@@ -226,7 +226,9 @@ namespace IntList
                 .ToList();
 
             var serializer = new XmlSerializer(typeof(List<Summoner>));
-            using var writer = new StreamWriter(_dbListPath);
+            using var writer = new XmlTextWriter(_dbListPath, null);
+            writer.Formatting = Formatting.Indented;
+
             serializer.Serialize(writer, summonersList);
 
             txtbxSummonerName.Text = "";
